@@ -2,16 +2,18 @@
 <html>
 <head>
     <title>購物網站</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <h1>商品列表</h1>
 {% for p in products %}
-<form method="post" action="/checkout">
+<form method="post" action="/add_to_cart">
     <p>{{p.name}} - ${{p.price}}</p>
     <input type="hidden" name="product_id" value="{{p.id}}">
     數量：<input type="number" name="quantity" value="1" min="1">
-    <button type="submit">購買</button>
+    <button type="submit">加入購物車</button>
 </form>
 {% endfor %}
+<a href="/cart">查看購物車</a>
 </body>
 </html>
