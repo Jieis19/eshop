@@ -11,9 +11,9 @@ HASH_IV = 'v77hoKGq4kWxNNIS'
 
 # 商品清單
 PRODUCTS = [
-    {'id': 1, 'name': '產品A', 'price': 1000},
-    {'id': 2, 'name': '產品B', 'price': 2000},
-    {'id': 3, 'name': '產品C', 'price': 3000},
+ {'id': 1, 'name': '產品A', 'price': 1000},
+ {'id': 2, 'name': '產品B', 'price': 2000},
+ {'id': 3, 'name': '產品C', 'price': 3000},
 ]
 
 # 首頁顯示商品
@@ -61,15 +61,15 @@ def checkout():
     item_name = " | ".join([f"{next(p['name'] for p in PRODUCTS if p['id']==int(pid))} x {qty}" for pid, qty in cart.items()])
 
     params = {
-        "MerchantID": MERCHANT_ID,
-        "MerchantTradeNo": f"EC{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
-        "MerchantTradeDate": datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
-        "PaymentType": "aio",
-        "TotalAmount": total,
-        "TradeDesc": "購物車結帳",
-        "ItemName": item_name,
-        "ReturnURL": "https://你的Render網址.com/receive",
-        "ChoosePayment": "ALL",
+     "MerchantID": MERCHANT_ID,
+     "MerchantTradeNo": f"EC{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
+     "MerchantTradeDate": datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
+     "PaymentType": "aio",
+     "TotalAmount": total,
+     "TradeDesc": "購物車結帳",
+     "ItemName": item_name,
+     "ReturnURL": "https://你的Render網址.com/receive",
+     "ChoosePayment": "ALL",
     }
 
     # 計算CheckMacValue
@@ -92,5 +92,4 @@ def receive():
     data = request.form
     return render_template('result.html', data=data)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+
