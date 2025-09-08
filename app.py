@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 import hashlib, datetime
 
 app = Flask(__name__)
-#app.secret_key = "your_secret_key"  # 必須設定，用於 session 加密
+app.secret_key = "123564"  # 必須設定，用於 session 加密
 
 # 綠界測試金鑰
 MERCHANT_ID = '2000132'
