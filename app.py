@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 import hashlib, datetime
 
 app = Flask(__name__)
-#app.secret_key = "your_secret_key"  # session加密
+#app.secret_key = "your_secret_key"  # 必須設定，用於 session 加密
 
 # 綠界測試金鑰
 MERCHANT_ID = '2000132'
@@ -16,7 +16,7 @@ PRODUCTS = [
     {'id': 3, 'name': '產品C', 'price': 3000},
 ]
 
-# 首頁顯示商品
+# 首頁
 @app.route('/')
 def index():
     return render_template('index.html', products=PRODUCTS)
@@ -24,40 +24,51 @@ def index():
 # 加入購物車
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
-    product_id = int(request.form['product_id'])
-    quantity = int(request.form['quantity'])
+    product_id = int(request.form.get('product_id', 0))
+    quantity = int(request.form.get('quantity', 1))
+
+    if product_id == 0 or quantity <= 0:
+        return "錯誤的商品或數量", 400
+
+    # 建立 session 購物車
     if 'cart' not in session:
         session['cart'] = {}
+
     cart = session['cart']
+
+    # 若商品已存在，累加數量
     if str(product_id) in cart:
         cart[str(product_id)] += quantity
     else:
         cart[str(product_id)] = quantity
+
     session['cart'] = cart
     return redirect('/cart')
 
-# 購物車頁面
+# 顯示購物車
 @app.route('/cart')
 def cart():
     cart = session.get('cart', {})
     items = []
     total = 0
+
     for pid, qty in cart.items():
-        product = next(p for p in PRODUCTS if p['id']==int(pid))
-        subtotal = product['price'] * qty
-        items.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
-        total += subtotal
+        product = next((p for p in PRODUCTS if p['id'] == int(pid)), None)
+        if product:
+            subtotal = product['price'] * qty
+            items.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
+            total += subtotal
+
     return render_template('cart.html', items=items, total=total)
 
-# 結帳，導向綠界
+# 結帳導向綠界
 @app.route('/checkout', methods=['POST'])
 def checkout():
     cart = session.get('cart', {})
     if not cart:
         return "購物車為空", 400
 
-    # 計算總金額
-    total = sum(next(p['price'] for p in PRODUCTS if p['id']==int(pid)) * qty for pid, qty in cart.items())
+    total = sum(next(p['price'] for p in PRODUCTS if p['id'] == int(pid)) * qty for pid, qty in cart.items())
     item_name = " | ".join([f"{next(p['name'] for p in PRODUCTS if p['id']==int(pid))} x {qty}" for pid, qty in cart.items()])
 
     params = {
@@ -72,11 +83,9 @@ def checkout():
         "ChoosePayment": "ALL",
     }
 
-    # 計算CheckMacValue
     check_value = f"HashKey={HASH_KEY}&" + "&".join([f"{k}={v}" for k,v in params.items()]) + f"&HashIV={HASH_IV}"
     params['CheckMacValue'] = hashlib.md5(check_value.encode('utf-8')).hexdigest().upper()
 
-    # 生成自動送出的HTML表單
     html_form = "<form id='ecpay_form' method='post' action='https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5'>"
     for k,v in params.items():
         html_form += f"<input type='hidden' name='{k}' value='{v}'>"
