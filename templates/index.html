@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>購物網站</title>
+</head>
+<body>
+<h1>商品列表</h1>
+{% for p in products %}
+<form method="post" action="/checkout">
+    <p>{{p.name}} - ${{p.price}}</p>
+    <input type="hidden" name="product_id" value="{{p.id}}">
+    數量：<input type="number" name="quantity" value="1" min="1">
+    <button type="submit">購買</button>
+</form>
+{% endfor %}
+</body>
+</html>
