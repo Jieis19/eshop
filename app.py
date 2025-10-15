@@ -20,7 +20,9 @@ PRODUCTS = [
 @app.route('/')
 def index():
     return render_template('index.html', products=PRODUCTS)
-
+@app.route('/book')
+def book_index():
+    return render_template('book.html')
 # 加入購物車
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
