@@ -1,13 +1,18 @@
 from flask import Flask, render_template, request, redirect, session
-import hashlib, datetime
+import hashlib, datetime, json, base64
+from Crypto.Cipher import AES  # pip install pycryptodome
+import urllib.parse
 
 app = Flask(__name__)
-app.secret_key = "123564"  # 必須設定，用於 session 加密
+app.secret_key = "123564"
 
-# 綠界測試金鑰
-MERCHANT_ID = '2000132'
-HASH_KEY = '5294y06JbISpM5x9'
-HASH_IV = 'v77hoKGq4kWxNNIS'
+# 🔹 藍新測試金鑰
+MERCHANT_ID = 'MS1804320480'
+HASH_KEY = 'KYLDPubJWMXhqokhFoAzowviMFba4A0N'
+HASH_IV = 'PMi9PKSrwXsJbx8C'
+
+# 🔹 付款網址
+NEWEBPAY_URL = "https://core.newebpay.com/MPG/mpg_gateway"
 
 # 商品清單
 PRODUCTS = [
@@ -16,14 +21,34 @@ PRODUCTS = [
     {'id': 3, 'name': '產品C', 'price': 3000},
 ]
 
-# 首頁
+# ---------- 工具函式 ----------
+def pad(data):
+    """PKCS7 padding"""
+    block_size = 32
+    padding_len = block_size - (len(data) % block_size)
+    return data + (chr(padding_len) * padding_len)
+
+def aes_encrypt(data):
+    """AES256-CBC 加密"""
+    cipher = AES.new(HASH_KEY.encode('utf-8'), AES.MODE_CBC, HASH_IV.encode('utf-8'))
+    padded_data = pad(data)
+    encrypted_bytes = cipher.encrypt(padded_data.encode('utf-8'))
+    return encrypted_bytes.hex()
+
+def sha256_encode(trade_info):
+    """產生 TradeSha"""
+    raw = f"HashKey={HASH_KEY}&{trade_info}&HashIV={HASH_IV}"
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest().upper()
+
+# ---------- 路由 ----------
 @app.route('/')
 def index():
     return render_template('index.html', products=PRODUCTS)
+
 @app.route('/book', methods=['GET'])
 def book():
     return render_template('book.html')
-# 加入購物車
+
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     product_id = int(request.form.get('product_id', 0))
@@ -32,13 +57,11 @@ def add_to_cart():
     if product_id == 0 or quantity <= 0:
         return "錯誤的商品或數量", 400
 
-    # 建立 session 購物車
     if 'cart' not in session:
         session['cart'] = {}
 
     cart = session['cart']
 
-    # 若商品已存在，累加數量
     if str(product_id) in cart:
         cart[str(product_id)] += quantity
     else:
@@ -47,7 +70,6 @@ def add_to_cart():
     session['cart'] = cart
     return redirect('/cart')
 
-# 顯示購物車
 @app.route('/cart')
 def cart():
     cart = session.get('cart', {})
@@ -63,7 +85,6 @@ def cart():
 
     return render_template('cart.html', items=items, total=total)
 
-# 結帳導向綠界
 @app.route('/checkout', methods=['POST'])
 def checkout():
     cart = session.get('cart', {})
@@ -73,34 +94,42 @@ def checkout():
     total = sum(next(p['price'] for p in PRODUCTS if p['id'] == int(pid)) * qty for pid, qty in cart.items())
     item_name = " | ".join([f"{next(p['name'] for p in PRODUCTS if p['id']==int(pid))} x {qty}" for pid, qty in cart.items()])
 
-    params = {
+    trade_no = f"NW{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    trade_data = {
         "MerchantID": MERCHANT_ID,
-        "MerchantTradeNo": f"EC{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
-        "MerchantTradeDate": datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
-        "PaymentType": "aio",
-        "TotalAmount": total,
-        "TradeDesc": "購物車結帳",
-        "ItemName": item_name,
-        "ReturnURL": "https://你的Render網址.com/receive",
-        "ChoosePayment": "ALL",
+        "RespondType": "JSON",
+        "TimeStamp": str(int(datetime.datetime.now().timestamp())),
+        "Version": "2.0",
+        "MerchantOrderNo": trade_no,
+        "Amt": total,
+        "ItemDesc": item_name,
+        "Email": "test@example.com",
+        "ReturnURL": "https://eshop-5a2r.onrender.com/receive",
+        "NotifyURL": "https://eshop-5a2r.onrender.com/receive",
+        "LoginType": 0,
     }
 
-    check_value = f"HashKey={HASH_KEY}&" + "&".join([f"{k}={v}" for k,v in params.items()]) + f"&HashIV={HASH_IV}"
-    params['CheckMacValue'] = hashlib.md5(check_value.encode('utf-8')).hexdigest().upper()
+    trade_query = urllib.parse.urlencode(trade_data)
+    trade_info = aes_encrypt(trade_query)
+    trade_sha = sha256_encode(trade_info)
 
-    html_form = "<form id='ecpay_form' method='post' action='https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5'>"
-    for k,v in params.items():
-        html_form += f"<input type='hidden' name='{k}' value='{v}'>"
-    html_form += "</form><script>document.getElementById('ecpay_form').submit();</script>"
+    html_form = f"""
+    <form id='newebpay_form' method='post' action='{NEWEBPAY_URL}'>
+        <input type='hidden' name='MerchantID' value='{MERCHANT_ID}'>
+        <input type='hidden' name='TradeInfo' value='{trade_info}'>
+        <input type='hidden' name='TradeSha' value='{trade_sha}'>
+        <input type='hidden' name='Version' value='2.0'>
+    </form>
+    <script>document.getElementById('newebpay_form').submit();</script>
+    """
 
-    # 清空購物車
     session['cart'] = {}
     return html_form
 
-# 綠界回傳結果
 @app.route('/receive', methods=['POST'])
 def receive():
-    data = request.form
+    data = request.form.to_dict()
     return render_template('result.html', data=data)
 
 if __name__ == '__main__':
