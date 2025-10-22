@@ -13,3 +13,45 @@
 <p>購物車空空如也</p>
 {% endif %}
 <a href="/">回首頁</a>
+
+
+
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>購物車</title>
+</head>
+<body>
+    <h1>購物車內容</h1>
+
+    {% if items %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>商品名稱</th>
+                <th>數量</th>
+                <th>小計</th>
+            </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>總金額：${{ total }}</h3>
+
+        <form action="/checkout" method="post">
+            <button type="submit">前往結帳（藍新金流）</button>
+        </form>
+
+    {% else %}
+        <p>購物車目前是空的。</p>
+    {% endif %}
+
+    <a href="/">回商品列表</a>
+</body>
+</html>
