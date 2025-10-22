@@ -1,10 +1,94 @@
+<!-- <!DOCTYPE html> -->
+<!-- <html> -->
+<!-- <head> -->
+ <!--    <title>交易結果</title> -->
+<!-- </head> -->
+<!-- <body> -->
+<!-- <h1>付款回傳結果</h1> -->
+<!-- <pre>{{data}}</pre> -->
+<!-- </body> -->
+<!-- </html> -->
+
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-    <title>交易結果</title>
+    <meta charset="UTF-8">
+    <title>交易結果</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f7f7f7;
+            text-align: center;
+            padding: 40px;
+        }
+        .result-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #2ecc71;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .fail {
+            color: #e74c3c;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-<h1>付款回傳結果</h1>
-<pre>{{data}}</pre>
+    <div class="result-box">
+        {% if data.Status == "SUCCESS" %}
+            <div class="success">✅ 付款成功</div>
+            <p>感謝您的購買！以下是交易明細：</p>
+        {% else %}
+            <div class="fail">❌ 付款失敗</div>
+            <p>交易未完成，請稍後再試或聯絡客服。</p>
+        {% endif %}
+
+        {% if data %}
+        <table>
+            <tr><th>欄位</th><th>內容</th></tr>
+            {% for k, v in data.items() %}
+            <tr>
+                <td>{{ k }}</td>
+                <td>{{ v }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        <a class="btn" href="/">回首頁</a>
+    </div>
 </body>
 </html>
