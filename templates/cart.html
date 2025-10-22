@@ -1,18 +1,18 @@
-<h1>購物車</h1>
-{% if items %}
-<ul>
-{% for item in items %}
-    <li>{{item.product.name}} x {{item.quantity}} = {{item.subtotal}}</li>
-{% endfor %}
-</ul>
-<p>總金額: {{total}}</p>
-<form method="post" action="/checkout">
-    <button type="submit">結帳</button>
-</form>
-{% else %}
-<p>購物車空空如也</p>
-{% endif %}
-<a href="/">回首頁</a>
+<!-- <h1>購物車</h1> -->
+<!-- {% if items %} -->
+<!-- <ul> -->
+<!-- {% for item in items %} -->
+ <!--    <li>{{item.product.name}} x {{item.quantity}} = {{item.subtotal}}</li> -->
+<!-- {% endfor %} -->
+<!-- </ul> -->
+<!-- <p>總金額: {{total}}</p> -->
+<!-- <form method="post" action="/checkout"> -->
+ <!--    <button type="submit">結帳</button> -->
+<!-- </form> -->
+<!-- {% else %} -->
+<!-- <p>購物車空空如也</p> -->
+<!-- {% endif %} -->
+<!-- <a href="/">回首頁</a> -->
 
 
 
