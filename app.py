@@ -16,9 +16,9 @@ NEWEBPAY_URL = "https://core.newebpay.com/MPG/mpg_gateway"
 
 # 商品清單
 PRODUCTS = [
-    {'id': 1, 'name': '產品A', 'price': 1000},
-    {'id': 2, 'name': '產品B', 'price': 2000},
-    {'id': 3, 'name': '產品C', 'price': 3000},
+    {'id': 1, 'name': 'windows 11 Home', 'price': 1000},
+    {'id': 2, 'name': 'windows 10 Pro', 'price': 2000},
+    {'id': 3, 'name': 'windows 11 Pro', 'price': 3000},
 ]
 
 # ---------- 工具函式 ----------
