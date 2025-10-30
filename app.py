@@ -49,7 +49,7 @@ def index():
 def book():
     return render_template('book.html')
 @app.route('/sale', methods=['GET'])
-def book():
+def sale():
     return render_template('sale.html')
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
