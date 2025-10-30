@@ -48,7 +48,9 @@ def index():
 @app.route('/book', methods=['GET'])
 def book():
     return render_template('book.html')
-
+@app.route('/sale', methods=['GET'])
+def book():
+    return render_template('sale.html')
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     product_id = int(request.form.get('product_id', 0))
