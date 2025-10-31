@@ -127,7 +127,7 @@
 
     async function loadHospitals() {
       try {
-        const res = await fetch('hospitals.json'); // 若用 Flask 請改成 /static/hospitals.json
+        const res = await fetch('/static/hospitals.json'); // 若用 Flask 請改成 /static/hospitals.json
         HOSPITALS = await res.json();
         populateCities();
       } catch (e) {
